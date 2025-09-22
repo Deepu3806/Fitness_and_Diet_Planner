@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fitness & Diet Planner (static)</title>
+  <style>
+    :root{--bg:#f7fafc;--card:#ffffff;--muted:#6b7280;--accent:#0ea5a4}
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; margin:0;background:linear-gradient(180deg,var(--bg),#fff);color:#111}
+    .wrap{max-width:1100px;margin:28px auto;padding:18px}
+    header{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    h1{font-size:1.6rem;margin:0}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px}
+    @media(min-width:980px){.grid{grid-template-columns:320px 1fr 320px}}
+    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
+    label{display:block;font-size:0.85rem;color:var(--muted);margin-bottom:6px}
+    input[type="text"],input[type="number"],select,textarea{width:100%;padding:8px;border:1px solid #e6e7eb;border-radius:8px;font-size:0.95rem}
+    .row{display:flex;gap:8px}
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid #d1fae5}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;text-align:left;border-top:1px solid #f1f5f9}
+    ul{margin:0;padding-left:18px}
+    .muted{color:var(--muted);font-size:0.85rem}
+    .small{font-size:0.82rem}
+    .flex{display:flex;align-items:center;gap:8px}
+    .right{justify-content:flex-end}
+    .chip{background:#ecfeff;padding:6px 8px;border-radius:999px;font-weight:600;color:#064e3b}
+    .progress-list{max-height:220px;overflow:auto}
+    footer{text-align:center;color:var(--muted);font-size:0.85rem;margin-top:18px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Fitness & Diet Planner</h1>
+      <div class="flex">
+        <div class="muted small">TDEE estimate: <strong id="tdee">—</strong></div>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- PROFILE -->
+      <section class="card">
+        <h2 style="margin-top:0">Profile</h2>
+        <div class="small muted">Tell me about you — I’ll suggest calories, meals & workouts.</div>
+        <div style="margin-top:10px">
+          <label>Name<input id="name" type="text" placeholder="Your name" /></label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <label>Age<input id="age" type="number" value="25"/></label>
+            <label>Weight (kg)<input id="weight" type="number" value="70"/></label>
+            <label>Height (cm)<input id="height" type="number" value="170"/></label>
+          </div>
+
+          <label>Sex
+            <select id="sex"><option value="female">Female</option><option value="male">Male</option></select>
+          </label>
+
+          <label>Activity Level
+            <select id="activity">
+              <option value="sedentary">Sedentary</option>
+              <option value="light">Light</option>
+              <option value="moderate" selected>Moderate</option>
+              <option value="active">Active</option>
+              <option value="very_active">Very active</option>
+            </select>
+          </label>
+
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <label style="flex:1">Goal
+              <select id="goal"><option value="lose">Lose weight</option><option value="maintain" selected>Maintain</option><option value="gain">Gain muscle</option></select>
+            </label>
+
+            <label style="flex:1">Experience
+              <select id="exp"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select>
+            </label>
+          </div>
+
+          <label>Diet Preference
+            <select id="diet"><option value="omnivore">Omnivore</option><option value="vegetarian">Vegetarian</option><option value="vegan">Vegan</option><option value="pescatarian">Pescatarian</option></select>
+          </label>
+
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button id="calcBtn" class="btn">Calculate & Save</button>
+            <button id="genMeals" class="btn">Generate Meal Plan</button>
+            <button id="genWorkouts" class="btn">Suggest Workouts</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- MAIN: Planner -->
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 style="margin:0">Weekly Planner</h2>
+          <div class="small muted">Quick actions</div>
+        </div>
+
+        <table style="margin-top:8px">
+          <thead><tr><th>Day</th><th>Activities</th><th>Actions</th></tr></thead>
+          <tbody id="plannerBody"></tbody>
+        </table>
+
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
+          <button id="exportCSV" class="btn">Export CSV</button>
+          <button id="clearPlan" class="btn ghost">Clear</button>
+        </div>
+      </section>
+
+      <!-- DIET & PROGRESS -->
+      <section class="card">
+        <h2 style="margin-top:0">Diet</h2>
+        <div id="mealCard" class="small muted">No meal plan yet — click "Generate Meal Plan".</div>
+
+        <hr style="margin:12px 0" />
+        <h3 style="margin:0">Progress</h3>
+        <div class="small muted">Log weight or notes (saved locally).</div>
+
+        <form id="progressForm" style="margin-top:8px">
+          <input id="pw" type="number" step="0.1" placeholder="Weight (kg)" />
+          <input id="pn" type="text" placeholder="Note (e.g., energy, sleep)" style="margin-top:6px" />
+          <div style="display:flex;justify-content:flex-end;margin-top:6px">
+            <button type="submit" class="btn">Add Entry</button>
+          </div>
+        </form>
+
+        <div class="progress-list" id="progressList" style="margin-top:8px"></div>
+
+      </section>
+
+    </main>
+
+    <footer>Static prototype • Save as <code>index.html</code> and open in browser. Want a ZIP or Firebase upgrade? Ask.</footer>
+  </div>
+
+  <script>
+    // --- Data templates ---
+    const EXERCISES = {
+      strength: { beginner: ["Bodyweight Squats","Incline Push-ups","Dumbbell Rows"], intermediate: ["Barbell Squats","Bench Press","Pull-ups"], advanced: ["Front Squats","Weighted Pull-ups","Deadlifts"] },
+      cardio: { beginner: ["Brisk Walk 30m","Light Jog 20m"], intermediate: ["Interval Run 20m","Cycling 30m"], advanced: ["HIIT 20m","Tempo Run 40m"] },
+      mobility: ["Dynamic Stretching 10m","Yoga Flow 20m","Foam Rolling 10m"]
+    };
+    const MEALS = {
+      omnivore:[{name:'Grilled Chicken & Quinoa',cal:600},{name:'Salmon & Sweet Potato',cal:650},{name:'Egg Omelette & Veggies',cal:420}],
+      vegetarian:[{name:'Chickpea Curry & Rice',cal:600},{name:'Tofu Stir-fry',cal:550},{name:'Greek Yogurt Bowl',cal:420}],
+      vegan:[{name:'Quinoa & Black Beans',cal:600},{name:'Vegan Buddha Bowl',cal:580},{name:'Smoothie & Oats',cal:420}],
+      pescatarian:[{name:'Grilled Fish & Veggies',cal:620},{name:'Poke Bowl',cal:580},{name:'Egg & Avocado Toast',cal:430}]
+    };
+
+    // --- Helpers ---
+    function calcBMR({weight, height, age, sex}){
+      if(sex==='male') return 10*weight + 6.25*height - 5*age + 5;
+      return 10*weight + 6.25*height - 5*age -161;
+    }
+    function activityMul(level){ switch(level){case 'sedentary':return 1.2;case 'light':return 1.375;case 'moderate':return 1.55;case 'active':return 1.725;case 'very_active':return 1.9;default:return 1.55}}
+
+    // --- State ---
+    const state = {
+      profile: {name:'',age:25,weight:70,height:170,sex:'female',activity:'moderate',goal:'maintain',exp:'beginner',diet:'omnivore'},
+      weekly: {Mon:[],Tue:[],Wed:[],Thu:[],Fri:[],Sat:[],Sun:[]},
+      meals:null,
+      progress: []
+    };
+
+    // --- DOM refs ---
+    const tdeeEl = document.getElementById('tdee');
+    const plannerBody = document.getElementById('plannerBody');
+    const mealCard = document.getElementById('mealCard');
+    const progressList = document.getElementById('progressList');
+
+    // --- Init/load ---
+    function load(){
+      const saved = localStorage.getItem('fd_static');
+      if(saved){
+        const s = JSON.parse(saved);
+        Object.assign(state, s);
+      }
+      // set inputs
+      ['name','age','weight','height','sex','activity','goal','exp','diet'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value = state.profile[id] ?? state.profile[id==='weight'?'weight':id]; el && el.addEventListener('change', onProfileChange); });
+      renderAll();
+    }
+
+    function save(){ localStorage.setItem('fd_static', JSON.stringify(state)); }
+
+    // --- Profile handlers ---
+    function onProfileChange(e){
+      const el = e.target;
+      const val = el.type==='number'? Number(el.value) : el.value;
+      state.profile[el.id] = val;
+      renderProfile();
+      save();
+    }
+
+    function renderProfile(){
+      const bmr = calcBMR({weight:state.profile.weight,height:state.profile.height,age:state.profile.age,sex:state.profile.sex});
+      const tdee = Math.round(bmr * activityMul(state.profile.activity));
+      tdeeEl.textContent = tdee + ' kcal';
+      state.profile._tdee = tdee;
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', ()=>{ renderProfile(); save(); alert('Profile saved & calories estimated.'); });
+
+    // --- Meal generation ---
+    document.getElementById('genMeals').addEventListener('click', ()=>{
+      const pref = state.profile.diet || 'omnivore';
+      const meals = MEALS[pref] || MEALS.omnivore;
+      // pick three distinct (or rotate)
+      const chosen = [meals[0 % meals.length], meals[1 % meals.length], meals[2 % meals.length]];
+      const snacksCal = 200;
+      state.meals = {breakfast:chosen[0], lunch:chosen[1], dinner:chosen[2], snacks:{name:'Fruit & Nuts',cal:snacksCal}, total:chosen.reduce((s,m)=>s+m.cal,0)+snacksCal};
+      save(); renderMeals(); alert('Meal plan generated');
+    });
+
+    function renderMeals(){
+      if(!state.meals){ mealCard.innerHTML = '<div class="muted">No meal plan yet — click "Generate Meal Plan".</div>'; return; }
+      mealCard.innerHTML = `<div><strong>Breakfast:</strong> ${state.meals.breakfast.name} — ${state.meals.breakfast.cal} kcal</div>
+        <div><strong>Lunch:</strong> ${state.meals.lunch.name} — ${state.meals.lunch.cal} kcal</div>
+        <div><strong>Dinner:</strong> ${state.meals.dinner.name} — ${state.meals.dinner.cal} kcal</div>
+        <div><strong>Snacks:</strong> ${state.meals.snacks.name} — ${state.meals.snacks.cal} kcal</div>
+        <div class="muted small">Estimated total: <strong>${state.meals.total}</strong> kcal</div>`;
+    }
+
+    // --- Workouts & planner ---
+    document.getElementById('genWorkouts').addEventListener('click', ()=>{
+      for(const d of Object.keys(state.weekly)){
+        const xp = state.profile.exp || 'beginner';
+        const goal = state.profile.goal;
+        let list = [];
+        if(goal==='lose'){ list = [...EXERCISES.cardio[xp]]; list.push(EXERCISES.mobility[0]); }
+        else if(goal==='gain'){ list = [...EXERCISES.strength[xp]]; list.push(EXERCISES.mobility[1]); }
+        else { list = [EXERCISES.strength[xp][0], EXERCISES.cardio[xp][0], EXERCISES.mobility[2]]; }
+        state.weekly[d] = list;
+      }
+      save(); renderPlanner(); alert('Weekly workouts added');
+    });
+
+    function renderPlanner(){
+      plannerBody.innerHTML='';
+      for(const day of Object.keys(state.weekly)){
+        const tr = document.createElement('tr');
+        const td1 = document.createElement('td'); td1.textContent = day;
+        const td2 = document.createElement('td'); td2.innerHTML = state.weekly[day].length?('<ul>'+state.weekly[day].map(x=>`<li>${x}</li>`).join('')+'</ul>'):'<span class="muted">No activities</span>';
+        const td3 = document.createElement('td');
+        const btnGen = document.createElement('button'); btnGen.className='btn'; btnGen.textContent='Generate'; btnGen.addEventListener('click', ()=>{ generateForDay(day); });
+        const btnClear = document.createElement('button'); btnClear.className='btn ghost'; btnClear.textContent='Clear'; btnClear.addEventListener('click', ()=>{ state.weekly[day]=[]; save(); renderPlanner(); });
+        const btnAdd = document.createElement('button'); btnAdd.className='btn ghost'; btnAdd.textContent='Add'; btnAdd.addEventListener('click', ()=>{ const txt = prompt('Add activity (comma separated to add multiple)'); if(txt){ const arr = txt.split(',').map(s=>s.trim()).filter(Boolean); state.weekly[day]=[...state.weekly[day],...arr]; save(); renderPlanner(); }});
+        td3.appendChild(btnGen); td3.appendChild(btnClear); td3.appendChild(btnAdd);
+        tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+        plannerBody.appendChild(tr);
+      }
+    }
+
+    function generateForDay(day){ const xp = state.profile.exp || 'beginner'; const goal = state.profile.goal; let list=[]; if(goal==='lose'){ list=[...EXERCISES.cardio[xp], EXERCISES.mobility[0]] } else if(goal==='gain'){ list=[...EXERCISES.strength[xp], EXERCISES.mobility[1]] } else { list=[EXERCISES.strength[xp][0], EXERCISES.cardio[xp][0], EXERCISES.mobility[2]] } state.weekly[day]=list; save(); renderPlanner(); }
+
+    document.getElementById('clearPlan').addEventListener('click', ()=>{ if(confirm('Clear weekly plan?')){ for(const d of Object.keys(state.weekly)) state.weekly[d]=[]; save(); renderPlanner(); }});
+
+    document.getElementById('exportCSV').addEventListener('click', ()=>{
+      const rows = [['Day','Activities','Meals']];
+      for(const d of Object.keys(state.weekly)){ const acts = state.weekly[d].join(' | '); const meals = state.meals?`${state.meals.breakfast.name} | ${state.meals.lunch.name} | ${state.meals.dinner.name}`:''; rows.push([d,acts,meals]); }
+      const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='fitness-plan.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    // --- Progress ---
+    document.getElementById('progressForm').addEventListener('submit', (e)=>{ e.preventDefault(); const w = document.getElementById('pw').value; const n = document.getElementById('pn').value; if(!w && !n) return alert('Enter weight or note'); state.progress.push({weight: w?Number(w):null, note: n||null, date:new Date().toISOString()}); document.getElementById('pw').value=''; document.getElementById('pn').value=''; save(); renderProgress(); });
+
+    function renderProgress(){ progressList.innerHTML=''; if(state.progress.length===0){ progressList.innerHTML='<div class="muted">No progress logged yet.</div>'; return; } for(const p of state.progress.slice().reverse()){ const d = document.createElement('div'); d.style.borderTop='1px solid #f1f5f9'; d.style.padding='8px 0'; d.innerHTML = `<div class="small muted">${new Date(p.date).toLocaleString()}</div><div><strong>${p.weight? p.weight+' kg' : p.note}</strong></div>${p.note?`<div class="muted small">${p.note}</div>`:''}`; progressList.appendChild(d); } }
+
+    function renderAll(){ renderProfile(); renderMeals(); renderPlanner(); renderProgress(); }
+
+    // --- bootstrap ---
+    load();
+
+  </script>
+</body>
+</html>
