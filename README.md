@@ -48,6 +48,8 @@ Pull requests welcome!
 💌 For major changes, open an issue to discuss improvements.
 
 ✏️ Documentation, code cleanups, and minor bug-fixes encouraged.
+
+
 By Team 
 Deepika P
 Harshini S
