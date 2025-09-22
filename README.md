@@ -1,5 +1,8 @@
 Fitness Diet Planner 🏋️‍♂️🥗
+
+
 A static web prototype to plan fitness, diet, and workouts tailored to your profile! Estimate calories, generate weekly meal plans, suggest exercises, and log progress — all saved locally in your browser.
+
 
 Features ✨
 🧑‍💻 Profile Setup: Enter age, weight, height, sex, activity level, goal, experience, and diet preference.
@@ -18,12 +21,14 @@ Features ✨
 
 🌐 No Backend Needed: Everything is saved locally for privacy and ease.
 
+
 Installation ⚡
 ⬇️ Download the repository and extract index.html.
 
 🌍 Open index.html in any modern browser. That's it!
 
 📦 No dependencies, no backend, no fuss.
+
 
 Usage 🕹️
 👤 Fill out your profile in the setup card: name, age, weight, height, sex, activity level, goal (lose, maintain, gain), experience, and diet preference.
@@ -35,6 +40,7 @@ Usage 🕹️
 📝 Enter your weight and notes to track progress.
 
 📄 Export your plan as CSV for easy sharing or storage.
+
 
 Contributing 🤝
 Pull requests welcome!
